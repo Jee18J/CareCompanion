@@ -100,8 +100,8 @@
 import streamlit as st
 import google.generativeai as genai
 import speech_recognition as sr
-from transformers import BertTokenizer, BertForMaskedLM
-import torch
+from transformers import BertTokenizer
+from datetime import datetime
 import time
 
 # Set page config
@@ -112,137 +112,112 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
 # Custom CSS for modern UI
 def local_css():
     st.markdown("""
     <style>
-         :root {
-             --primary: #4a6fa5;
-             --secondary: #166088;
-             --accent: #4fc1e9;
-             --background: #f8f9fa;
-             --card: #ffffff;
-             --text: #2c3e50;
-             --warning: #ff6b6b;
-             --success: #48dbb4;
-         }
-        
-         .main {
-             background-color: var(--background);
-         }
-        
-         /* Header styling */
-         .header-container {
-             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-             padding: 2rem;
-             border-radius: 12px;
-             margin-bottom: 2rem;
-             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-             color: white;
-             text-align: center;
-         }
-        
-         /* Button styling */
-         .stButton>button {
-             background-color: var(--primary);
-             color: white;
-             border-radius: 8px;
-             padding: 0.75rem 1.5rem;
-             font-weight: 600;
-             border: none;
-             transition: all 0.3s ease;
-             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-         }
-        
-         .stButton>button:hover {
-             background-color: var(--secondary);
-             transform: translateY(-2px);
-             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-         }
-        
-         .stButton>button:active {
-             transform: translateY(0);
-         }
-        
-         /* Chat message styling */
-         .stChatMessage {
-             border-radius: 12px;
-             padding: 1rem;
-             margin: 0.5rem 0;
-             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-         }
-        
-         .stChatMessage.user {
-             background-color: rgba(74, 111, 165, 0.1);
-             border-left: 4px solid var(--primary);
-         }
-        
-         .stChatMessage.assistant {
-             background-color: rgba(255, 255, 255, 0.9);
-             border-left: 4px solid var(--accent);
-         }
-        
-         /* Radio buttons */
-         .stRadio [role="radiogroup"] {
-             gap: 15px;
-             margin-bottom: 1rem;
-         }
-        
-         .stRadio [role="radio"] {
-             padding: 8px 16px;
-             border-radius: 8px;
-             border: 1px solid #dfe3e8;
-         }
-        
-         .stRadio [role="radio"][aria-checked="true"] {
-             background-color: var(--primary);
-             color: white;
-             border-color: var(--primary);
-         }
-        
-         /* Input field */
-         .stTextInput input {
-             border-radius: 8px !important;
-             padding: 12px 14px !important;
-         }
-        
-         /* Footer */
-         .footer {
-             text-align: center;
-             padding: 1.5rem;
-             color: #666;
-             font-size: 0.9em;
-             margin-top: 2rem;
-             border-top: 1px solid #eee;
-         }
-        
-         /* Responsive adjustments */
-         @media (max-width: 768px) {
-             .header-container {
-                 padding: 1.5rem 1rem;
-             }
-            
-             .stButton>button {
-                 padding: 0.5rem 1rem;
-             }
-         }
-     </style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #166088;
+            --accent: #4fc1e9;
+            --background: #f8f9fa;
+            --card: #ffffff;
+            --text: #2c3e50;
+            --warning: #ff6b6b;
+            --success: #48dbb4;
+        }
+        .main {
+            background-color: var(--background);
+        }
+        /* Header styling */
+        .header-container {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            color: white;
+            text-align: center;
+        }
+        /* Button styling */
+        .stButton>button {
+            background-color: var(--primary);
+            color: white;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stButton>button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .stButton>button:active {
+            transform: translateY(0);
+        }
+        /* Chat message styling */
+        .stChatMessage {
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .stChatMessage.user {
+            background-color: rgba(74, 111, 165, 0.1);
+            border-left: 4px solid var(--primary);
+        }
+        .stChatMessage.assistant {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-left: 4px solid var(--accent);
+        }
+        /* Radio buttons */
+        .stRadio [role="radiogroup"] {
+            gap: 15px;
+            margin-bottom: 1rem;
+        }
+        .stRadio [role="radio"] {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #dfe3e8;
+        }
+        .stRadio [role="radio"][aria-checked="true"] {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        /* Input field */
+        .stTextInput input {
+            border-radius: 8px !important;
+            padding: 12px 14px !important;
+        }
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header-container {
+                padding: 1.5rem 1rem;
+            }
+            .stButton>button {
+                padding: 0.5rem 1rem;
+            }
+        }
+    </style>
     """, unsafe_allow_html=True)
 
 # Configure Gemini AI (use your actual API key)
 genai.configure(api_key="AIzaSyClwCo8aIpV8gieeDQ5HsjiASODhGkxt-0")
 
-# Load alternative clinical model and tokenizer with caching
-@st.cache_resource  # This caches the model and tokenizer
-def load_clinical_model():
-    tokenizer = BertTokenizer.from_pretrained("dmis-lab/biobert-base-cased-v1.1")
-    clinical_model = BertForMaskedLM.from_pretrained("dmis-lab/biobert-base-cased-v1.1")
-    return tokenizer, clinical_model
-
-tokenizer, clinical_model = load_clinical_model()
-
-# Model configuration for Generative AI
+# Model configuration
 generation_config = {
     "temperature": 1,
     "top_p": 0.95,
@@ -250,28 +225,40 @@ generation_config = {
     "max_output_tokens": 8192,
     "response_mime_type": "text/plain",
 }
-
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     generation_config=generation_config,
     system_instruction="""
 You are a helpful and friendly pediatrician chatbot designed to assist parents with common child health concerns.
 Your responsibilities:
- - Answer questions related to common symptoms in children such as cold, cough, fever, stomach pain, rashes, vomiting, etc.
- - Provide general explanations for possible causes in simple and reassuring language.
- - Suggest commonly used over-the-counter (OTC) medications, only by generic names (e.g., paracetamol, cetirizine).
- - Mention age-appropriateness or dosage ranges when necessary, but avoid giving exact dosages.
- - Recommend seeing a pediatrician for persistent, severe, or unclear symptoms.
- - Keep answers brief, clear, and non-technical.
- - Avoid giving deep medical advice, prescription-level detail, or suggesting specific brands.
-
- Example:
- User: My child has had a cough for 3 days.
- You: It sounds like your child might have a common cold or viral infection, which often causes cough. Make sure they get enough fluids and rest. You can consider giving a children's cough syrup with a mild antihistamine like cetirizine. If the cough worsens or lasts more than a week, it's best to see a pediatrician.
-
- Always include a gentle reminder to consult a doctor for personalized care.
-"""
+- Answer questions related to common symptoms in children such as cold, cough, fever, stomach pain, rashes, vomiting, etc.
+- Provide general explanations for possible causes in simple and reassuring language.
+- Suggest commonly used over-the-counter (OTC) medications, only by generic names (e.g., paracetamol, cetirizine).
+- Mention age-appropriateness or dosage ranges when necessary, but avoid giving exact dosages.
+- Recommend seeing a pediatrician for persistent, severe, or unclear symptoms.
+- Keep answers brief, clear, and non-technical.
+- Avoid giving deep medical advice, prescription-level detail, or suggesting specific brands.
+Example:
+User: My child has had a cough for 3 days.
+You: It sounds like your child might have a common cold or viral infection, which often causes cough. Make sure they get enough fluids and rest. You can consider giving a children's cough syrup with a mild antihistamine like cetirizine. If the cough worsens or lasts more than a week, it's best to see a pediatrician.
+Always include a gentle reminder to consult a doctor for personalized care.
+""",
 )
+
+# Load BERT tokenizer
+@st.cache_resource
+def load_bert_tokenizer():
+    tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
+    return tokenizer
+
+tokenizer = load_bert_tokenizer()
+
+# Function to extract medical terms using LLM
+def extract_medical_terms(prompt):
+    extraction_prompt = f"Extract medical terms from the following text: '{prompt}'. Only list the terms separated by commas."
+    response = model.generate_content(extraction_prompt)
+    medical_terms = [term.strip() for term in response.text.split(",") if term.strip()]
+    return medical_terms
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -279,8 +266,9 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "Hello! I'm your pediatric health assistant. How can I help?"}
     ]
 
-local_css()
 
+
+local_css()
 
 # Header with gradient
 st.markdown("""
@@ -298,6 +286,11 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Display chat messages with enhanced styling
+for message in st.session_state.messages:
+    with st.chat_message(message["role"], avatar="👨‍⚕️" if message["role"] == "assistant" else "👤"):
+        st.markdown(message["content"])
+
 # Function to process voice input
 def voice_input():
     recognizer = sr.Recognizer()
@@ -313,19 +306,6 @@ def voice_input():
             st.error(f"Error accessing microphone: {e}")
             return None
 
-# Function to analyze input with Clinical BERT
-def clinical_bert_query(prompt):
-    inputs = tokenizer(prompt, return_tensors='pt')
-    with torch.no_grad():
-        outputs = clinical_model(**inputs)
-    # You can implement additional processing based on the outputs if required
-    return prompt  # Here we're just passing the prompt, but you can modify as needed
-
-# Display chat messages with enhanced styling
-for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar="👨‍⚕️" if message["role"] == "assistant" else "👤"):
-        st.markdown(message["content"])
-
 # Options for input: Text or Voice
 input_mode = st.radio(
     "Choose your input method:",
@@ -336,20 +316,26 @@ input_mode = st.radio(
 
 if input_mode == "Text":
     if prompt := st.chat_input("Ask about your child's symptoms..."):
+        # Tokenize the input with BERT
+        tokens = tokenizer.tokenize(prompt)
+        tokenized_text = tokenizer.convert_tokens_to_string(tokens)
+        
+        # Extract medical terms using LLM
+        medical_terms = extract_medical_terms(tokenized_text)
+        st.info(f"Extracted Medical Terms: {', '.join(medical_terms) if medical_terms else 'None'}")
+        
+        # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user", avatar="👤"):
             st.markdown(prompt)
         
-        # Analyze input with Clinical BERT
-        clinical_response = clinical_bert_query(prompt)
-
-        # Generate response from Google Model
+        # Generate response from Gemini
         with st.chat_message("assistant", avatar="👨‍⚕️"):
             message_placeholder = st.empty()
             full_response = ""
             with st.spinner("Analyzing your question..."):
                 try:
-                    response = model.generate_content(clinical_response)
+                    response = model.generate_content(prompt)  # Send the original prompt to Gemini
                     for chunk in response.text.split(" "):
                         full_response += chunk + " "
                         time.sleep(0.05)
@@ -365,18 +351,24 @@ elif input_mode == "Voice":
         if st.button("🎤 Click to Speak", use_container_width=True):
             prompt = voice_input()
             if prompt:
+                # Tokenize the input with BERT
+                tokens = tokenizer.tokenize(prompt)
+                tokenized_text = tokenizer.convert_tokens_to_string(tokens)
+                
+                # Extract medical terms using LLM
+                medical_terms = extract_medical_terms(tokenized_text)
+                st.info(f"Extracted Medical Terms: {', '.join(medical_terms) if medical_terms else 'None'}")
+                
+                # Add user message to chat history
                 st.session_state.messages.append({"role": "user", "content": prompt})
                 with st.chat_message("user", avatar="👤"):
                     st.markdown(prompt)
                 
-                # Analyze input with Clinical BERT
-                clinical_response = clinical_bert_query(prompt)
-
-                # Generate response from Google Model
+                # Generate response from Gemini
                 with st.chat_message("assistant", avatar="👨‍⚕️"):
                     with st.spinner("Analyzing your question..."):
                         try:
-                            response = model.generate_content(clinical_response)
+                            response = model.generate_content(prompt)  # Send the original prompt to Gemini
                             st.markdown(response.text)
                             st.session_state.messages.append({"role": "assistant", "content": response.text})
                         except Exception as e:
@@ -394,3 +386,11 @@ st.markdown("""
     <p>Always consult a qualified healthcare provider for diagnosis and treatment.</p>
 </div>
 """, unsafe_allow_html=True)
+
+
+
+
+
+
+
+
