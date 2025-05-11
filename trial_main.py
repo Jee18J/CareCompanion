@@ -1,106 +1,7 @@
-# import streamlit as st
-# import google.generativeai as genai
-# import speech_recognition as sr
-
-# # Configure Gemini AI (use your actual API key)
-# genai.configure(api_key="AIzaSyClwCo8aIpV8gieeDQ5HsjiASODhGkxt-0")
-
-# # Model configuration (identical to your Flask version)
-# generation_config = {
-#     "temperature": 1,
-#     "top_p": 0.95,
-#     "top_k": 40,
-#     "max_output_tokens": 8192,
-#     "response_mime_type": "text/plain",
-# }
-
-# model = genai.GenerativeModel(
-#     model_name="gemini-1.5-flash",
-#     generation_config=generation_config,
-#     system_instruction="pediatrician work\nFor example if i ask \"My child has cough for 3 days \" means it should reply like it cold disease \nand give some common medicin names and it should give generic answers not in depth\n\n",
-# )
-
-# # Initialize chat history
-# if "messages" not in st.session_state:
-#     st.session_state.messages = [
-#         {"role": "assistant", "content": "Hello! I'm your pediatric health assistant. How can I help?"}
-#     ]
-
-# # Page layout
-# st.set_page_config(page_title="Pediatric Health Assistant", page_icon="👶")
-# st.title("👶 Pediatric Health Assistant")
-
-# # Display chat messages
-# for message in st.session_state.messages:
-#     with st.chat_message(message["role"]):
-#         st.markdown(message["content"])
-
-# # Function to process voice input
-# def voice_input():
-#     recognizer = sr.Recognizer()
-#     with sr.Microphone() as source:
-#         st.info("Please speak your question...")
-#         audio = recognizer.listen(source)
-        
-#         # Recognizing the speech
-#         try:
-#             prompt = recognizer.recognize_google(audio)
-#             st.success(f"You said: {prompt}")
-#             return prompt
-#         except sr.UnknownValueError:
-#             st.error("Sorry, I could not understand the audio.")
-#             return None
-#         except sr.RequestError as e:
-#             st.error(f"Could not request results from Google Speech Recognition service; {e}")
-#             return None
-
-# # Options for input: Text or Voice
-# input_mode = st.radio("Choose your input method:", ("Text", "Voice"))
-
-# if input_mode == "Text":
-#     if prompt := st.chat_input("Ask about your child's symptoms..."):
-#         # Process the prompt as normal
-#         st.session_state.messages.append({"role": "user", "content": prompt})
-#         with st.chat_message("user"):
-#             st.markdown(prompt)
-
-#         with st.chat_message("assistant"):
-#             with st.spinner("Thinking..."):
-#                 try:
-#                     response = model.generate_content(prompt)
-#                     st.markdown(response.text)
-#                     st.session_state.messages.append({"role": "assistant", "content": response.text})
-#                 except Exception as e:
-#                     st.error(f"Error: {str(e)}")
-
-# elif input_mode == "Voice":
-#     if st.button("Click to Speak"):
-#         prompt = voice_input()
-#         if prompt:
-#             # Process the prompt as received from voice input
-#             st.session_state.messages.append({"role": "user", "content": prompt})
-#             with st.chat_message("user"):
-#                 st.markdown(prompt)
-
-#             with st.chat_message("assistant"):
-#                 with st.spinner("Thinking..."):
-#                     try:
-#                         response = model.generate_content(prompt)
-#                         st.markdown(response.text)
-#                         st.session_state.messages.append({"role": "assistant", "content": response.text})
-#                     except Exception as e:
-#                         st.error(f"Error: {str(e)}")
-
-# # Navigation button using native Streamlit
-# st.markdown("---")
-# if st.button("Detailed Symptom Checker", type="primary", use_container_width=True):
-#     st.switch_page("pages/trial.py")  # Correct path to the target page/
-
-
 import streamlit as st
 import google.generativeai as genai
 import speech_recognition as sr
-from transformers import BertTokenizer
+from transformers import BertTokenizerFast
 from datetime import datetime
 import time
 
@@ -214,7 +115,7 @@ def local_css():
     </style>
     """, unsafe_allow_html=True)
 
-# Configure Gemini AI (use your actual API key)
+# Configure Gemini AI 
 genai.configure(api_key="AIzaSyClwCo8aIpV8gieeDQ5HsjiASODhGkxt-0")
 
 # Model configuration
@@ -248,17 +149,31 @@ Always include a gentle reminder to consult a doctor for personalized care.
 # Load BERT tokenizer
 @st.cache_resource
 def load_bert_tokenizer():
-    tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
+    tokenizer = BertTokenizerFast.from_pretrained("bert-base-cased")
     return tokenizer
 
 tokenizer = load_bert_tokenizer()
 
 # Function to extract medical terms using LLM
 def extract_medical_terms(prompt):
-    extraction_prompt = f"Extract medical terms from the following text: '{prompt}'. Only list the terms separated by commas."
+    # First tokenize the prompt
+    tokens = tokenizer.tokenize(prompt)
+    tokenized_text = tokenizer.convert_tokens_to_string(tokens)
+    
+    # Send tokenized text to LLM for term extraction
+    extraction_prompt = f"""
+    Extract ONLY medical terms from this tokenized text: '{tokenized_text}'. 
+    Follow these rules:
+    1. Return only medical terms separated by commas
+    2. Ignore non-medical words
+    3. Include symptoms, body parts, conditions
+    4. Keep terms in their original form
+    Example Output: fever, cough, headache
+    """
+    
     response = model.generate_content(extraction_prompt)
     medical_terms = [term.strip() for term in response.text.split(",") if term.strip()]
-    return medical_terms
+    return medical_terms, tokenized_text  # Return both terms and tokenized text
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -316,12 +231,9 @@ input_mode = st.radio(
 
 if input_mode == "Text":
     if prompt := st.chat_input("Ask about your child's symptoms..."):
-        # Tokenize the input with BERT
-        tokens = tokenizer.tokenize(prompt)
-        tokenized_text = tokenizer.convert_tokens_to_string(tokens)
+        # Extract medical terms using LLM (which now handles tokenization internally)
+        medical_terms, tokenized_text = extract_medical_terms(prompt)
         
-        # Extract medical terms using LLM
-        medical_terms = extract_medical_terms(tokenized_text)
         st.info(f"Extracted Medical Terms: {', '.join(medical_terms) if medical_terms else 'None'}")
         
         # Add user message to chat history
@@ -335,7 +247,10 @@ if input_mode == "Text":
             full_response = ""
             with st.spinner("Analyzing your question..."):
                 try:
-                    response = model.generate_content(prompt)  # Send the original prompt to Gemini
+                    # Include medical terms in the prompt to Gemini for better context
+                    enhanced_prompt = f"Original query: {prompt}\nIdentified medical terms: {', '.join(medical_terms)}"
+                    response = model.generate_content(enhanced_prompt)
+                    
                     for chunk in response.text.split(" "):
                         full_response += chunk + " "
                         time.sleep(0.05)
@@ -351,12 +266,10 @@ elif input_mode == "Voice":
         if st.button("🎤 Click to Speak", use_container_width=True):
             prompt = voice_input()
             if prompt:
-                # Tokenize the input with BERT
-                tokens = tokenizer.tokenize(prompt)
-                tokenized_text = tokenizer.convert_tokens_to_string(tokens)
+                # Extract medical terms using LLM (handles tokenization)
+                medical_terms, tokenized_text = extract_medical_terms(prompt)
                 
-                # Extract medical terms using LLM
-                medical_terms = extract_medical_terms(tokenized_text)
+                
                 st.info(f"Extracted Medical Terms: {', '.join(medical_terms) if medical_terms else 'None'}")
                 
                 # Add user message to chat history
@@ -368,7 +281,8 @@ elif input_mode == "Voice":
                 with st.chat_message("assistant", avatar="👨‍⚕️"):
                     with st.spinner("Analyzing your question..."):
                         try:
-                            response = model.generate_content(prompt)  # Send the original prompt to Gemini
+                            enhanced_prompt = f"Original query: {prompt}\nIdentified medical terms: {', '.join(medical_terms)}"
+                            response = model.generate_content(enhanced_prompt)
                             st.markdown(response.text)
                             st.session_state.messages.append({"role": "assistant", "content": response.text})
                         except Exception as e:
