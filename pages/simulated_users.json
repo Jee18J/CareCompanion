@@ -1,0 +1,18 @@
+{
+    "jeevi": {
+        "user_id": "0186b85f-a09b-40c8-984c-74bdadf2559b",
+        "password_hash": "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5"
+    },
+    "jeevitha": {
+        "user_id": "945e71c6-c7b7-4b32-99be-4ccf8da45d2e",
+        "password_hash": "15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225"
+    },
+    "user1": {
+        "user_id": "0ac12897-41bb-41a6-abfc-962eec7d4199",
+        "password_hash": "15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225"
+    },
+    "jeevitha18": {
+        "user_id": "57e545a3-b164-4370-a3f4-67cc47704dd4",
+        "password_hash": "15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225"
+    }
+}

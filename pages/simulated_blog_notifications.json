@@ -1,0 +1,78 @@
+{
+    "jeevi": [
+        {
+            "id": "75cc84ba-afd9-4d89-adac-f471f0343291",
+            "message": "Your post 'How i helped my son recover using ayurvedic remedies' was reported and removed by jeevitha.",
+            "read": true,
+            "user_id": "0186b85f-a09b-40c8-984c-74bdadf2559b"
+        },
+        {
+            "id": "9af50ec5-0695-4c18-a037-ebd3c381bb37",
+            "message": "Your post 'How i helped my son recover using ayurvedic remedies' was reported and removed by jeevitha.",
+            "read": true,
+            "user_id": "0186b85f-a09b-40c8-984c-74bdadf2559b"
+        },
+        {
+            "id": "f8aa5633-9888-4b20-ae54-894ed406fbd1",
+            "message": "Your post 'trial' about Asthma was reported and removed by user1.",
+            "read": true,
+            "user_id": "0186b85f-a09b-40c8-984c-74bdadf2559b"
+        },
+        {
+            "id": "830ec2b5-c5d0-4da2-b8d0-0336b2bf25b8",
+            "message": "Your post 'trial' was reported and removed by jeevitha.",
+            "read": true,
+            "user_id": "0186b85f-a09b-40c8-984c-74bdadf2559b"
+        },
+        {
+            "id": "7290cc7e-4d78-4442-9dd4-bbcd7fc2eb89",
+            "message": "Your post 'How honey helped cure common cold' was reported and removed by user1.",
+            "read": true,
+            "user_id": "0186b85f-a09b-40c8-984c-74bdadf2559b"
+        },
+        {
+            "id": "0e6e4ede-8c19-40c6-a171-9240f52510c2",
+            "message": "Your post 'trial' was reported and removed by user1.",
+            "read": true,
+            "user_id": "0186b85f-a09b-40c8-984c-74bdadf2559b"
+        },
+        {
+            "id": "7347af0b-9635-47f9-9b3f-1b23d726aa5f",
+            "message": "Your post 'trial' was reported and removed by user1.",
+            "read": true,
+            "user_id": "0186b85f-a09b-40c8-984c-74bdadf2559b"
+        }
+    ],
+    "user1": [
+        {
+            "id": "bbe2f0c0-6afe-4d5e-b21d-c70be7d5e967",
+            "message": "Your post 'trial' was reported and removed by jeevi.",
+            "read": true,
+            "user_id": "0ac12897-41bb-41a6-abfc-962eec7d4199"
+        },
+        {
+            "id": "6af6e10a-4f6a-44da-8934-b39e5702c76d",
+            "message": "Your post 'home remedies to help with cold' was reported and removed by jeevitha.",
+            "read": true,
+            "user_id": "0ac12897-41bb-41a6-abfc-962eec7d4199"
+        },
+        {
+            "id": "ec30eb98-048b-4835-8850-8b9f23fccef7",
+            "message": "Your post 'trial' was reported and removed by jeevi.",
+            "read": true,
+            "user_id": "0ac12897-41bb-41a6-abfc-962eec7d4199"
+        },
+        {
+            "id": "80562eb9-61f4-4f71-9b67-beda09b8b50a",
+            "message": "Your post 'trial' was reported and removed by jeevi.",
+            "read": true,
+            "user_id": "0ac12897-41bb-41a6-abfc-962eec7d4199"
+        },
+        {
+            "id": "3232d226-59a7-4629-a8f1-28da7eed62a1",
+            "message": "Your post 'trial' was reported and removed by jeevi.",
+            "read": false,
+            "user_id": "0ac12897-41bb-41a6-abfc-962eec7d4199"
+        }
+    ]
+}
